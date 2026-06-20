@@ -210,11 +210,14 @@ jobs:
             $args += "--multi-window"
           }
 
-          # Create the javascript file using a PowerShell Here-String
+          # Create the javascript file with BOTH border toggle and zoom controllers
           $jsContent = @"
           let isBorderless = false;
+          let zoomLevel = 1.0;
+          
           document.addEventListener('keydown', async (e) => {
-            if (e.key === 'F11') {
+            // === 1. BORDERLESS TOGGLE (Ctrl + B) ===
+            if (e.key.toUpperCase() === 'F11') {
               e.preventDefault();
               isBorderless = !isBorderless;
               try {
@@ -224,10 +227,39 @@ jobs:
                 console.error('Tauri interaction failed:', err);
               }
             }
+          
+            // === 2. ZOOM IN (Ctrl + '=') ===
+            if (e.ctrlKey && e.key === '=') {
+              e.preventDefault();
+              zoomLevel += 0.1;
+              document.body.style.transform = 'scale(' + zoomLevel + ')';
+              document.body.style.transformOrigin = 'top left';
+              document.body.style.width = (100 / zoomLevel) + '%';
+              document.body.style.height = (100 / zoomLevel) + '%';
+            }
+          
+            // === 3. ZOOM OUT (Ctrl + '-') ===
+            if (e.ctrlKey && e.key === '-') {
+              e.preventDefault();
+              zoomLevel = Math.max(0.5, zoomLevel - 0.1); // Limits minimum shrinkage to 50%
+              document.body.style.transform = 'scale(' + zoomLevel + ')';
+              document.body.style.transformOrigin = 'top left';
+              document.body.style.width = (100 / zoomLevel) + '%';
+              document.body.style.height = (100 / zoomLevel) + '%';
+            }
+          
+            // === 4. RESET ZOOM (Ctrl + '0') ===
+            if (e.ctrlKey && e.key === '0') {
+              e.preventDefault();
+              zoomLevel = 1.0;
+              document.body.style.transform = 'none';
+              document.body.style.width = '100%';
+              document.body.style.height = '100%';
+            }
           });
           "@
           
-          # Force-write the text block to your local workspace disk
+          # Write the text block cleanly to your workspace
           Set-Content -Path "toggle-border.js" -Value $jsContent
 
           $args += "--inject"
