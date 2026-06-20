@@ -218,19 +218,14 @@ jobs:
             // === 1. BORDERLESS TOGGLE (F11 Override) ===
             if (e.key === 'F11') {
               e.preventDefault();
-              try {
-                // Pinpoint the window object explicitly bypassing version mismatching
-                const appWindow = window.__TAURI__.window.getCurrentWindow 
-                  ? window.__TAURI__.window.getCurrentWindow() 
-                  : (window.__TAURI__.window.getCurrent ? window.__TAURI__.window.getCurrent() : window.__TAURI__.window.appWindow);
-
-                // Check Tauri's real decoration state dynamically
-                const hasDecorations = await appWindow.isDecorated();
-                
-                // Toggle the borders cleanly: if it has them, remove them. If not, restore them.
-                await appWindow.setDecorations(!hasDecorations);
-              } catch (err) {
-                console.error('Tauri interaction failed:', err);
+              
+              // Use the browser's native engine to drop the window borders/titlebar
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                  console.error('Fullscreen request failed:', err);
+                });
+              } else {
+                document.exitFullscreen();
               }
             }
           
@@ -247,7 +242,7 @@ jobs:
             // === 3. ZOOM OUT (Ctrl + '-') ===
             if (e.ctrlKey && e.key === '-') {
               e.preventDefault();
-              zoomLevel = Math.max(0.5, zoomLevel - 0.1); // Limits minimum shrinkage to 50%
+              zoomLevel = Math.max(0.5, zoomLevel - 0.1);
               document.body.style.transform = 'scale(' + zoomLevel + ')';
               document.body.style.transformOrigin = 'top left';
               document.body.style.width = (100 / zoomLevel) + '%';
@@ -264,6 +259,7 @@ jobs:
             }
           });
           "@
+
           
           # Write the text block cleanly to your workspace
           Set-Content -Path "toggle-border.js" -Value $jsContent
