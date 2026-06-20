@@ -28,11 +28,11 @@ on:
       width:
         description: "Window width (px)"
         required: false
-        default: "1200"
+        default: "1280"
       height:
         description: "Window height (px)"
         required: false
-        default: "780"
+        default: "1030"
       min_width:
         description: "Minimum window width (px)"
         required: false
@@ -214,7 +214,7 @@ jobs:
           $jsContent = @"
           let isBorderless = false;
           document.addEventListener('keydown', async (e) => {
-            if (e.ctrlKey && e.key.toLowerCase() === 'b') {
+            if (e.key === 'F11') {
               e.preventDefault();
               isBorderless = !isBorderless;
               try {
@@ -230,10 +230,11 @@ jobs:
           # Force-write the text block to your local workspace disk
           Set-Content -Path "toggle-border.js" -Value $jsContent
 
-          $args += "--inject", "`"./toggle-border.js`""
+          $args += "--inject"
+          $args += "./toggle-border.js"
 
           Write-Host "Running: node dist/cli.js $($args -join ' ')"
-          node dist/cli.js $args
+          node dist/cli.js @args
 
           git checkout -- src-tauri/Cargo.lock
 
