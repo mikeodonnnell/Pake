@@ -210,25 +210,25 @@ jobs:
             $args += "--multi-window"
           }
 
-          # Create a physical JavaScript file on the runner hard drive
-          cat << 'EOF' > toggle-border.js
+          # Create the javascript file using a PowerShell Here-String
+          $jsContent = @"
           let isBorderless = false;
           document.addEventListener('keydown', async (e) => {
             if (e.ctrlKey && e.key.toLowerCase() === 'b') {
               e.preventDefault();
               isBorderless = !isBorderless;
               try {
-                // Access Tauri's native window frame manager safely
                 const appWindow = window.__TAURI__.window.getCurrent ? window.__TAURI__.window.getCurrent() : window.__TAURI__.window.appWindow;
-                
-                // setDecorations(true) shows borders, setDecorations(false) hides them
                 await appWindow.setDecorations(!isBorderless);
               } catch (err) {
                 console.error('Tauri interaction failed:', err);
               }
             }
           });
-          EOF
+          "@
+          
+          # Force-write the text block to your local workspace disk
+          Set-Content -Path "toggle-border.js" -Value $jsContent
 
           $args += "--inject ./toggle-border.js "
 
