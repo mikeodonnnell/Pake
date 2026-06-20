@@ -47,7 +47,7 @@ on:
         description: "Allow multiple instances of the app to run simultaneously"
         required: false
         type: boolean
-        default: false
+        default: true
       multi_window:
         description: "Allow multiple windows"
         required: false
@@ -210,6 +210,32 @@ jobs:
             $args += "--multi-window"
           }
 
+          $args += "--inject-javascript "
+          $args += "let isBorderless = false;
+          
+          document.addEventListener('keydown', async (e) => {
+            // Catch the Ctrl + B hotkey combination
+            if (e.key === 'F11') {
+              e.preventDefault();
+              isBorderless = !isBorderless;
+              
+              try {
+                // Access Tauri's core window frame manager dynamically
+                const appWindow = window.__TAURI__.window.getCurrent ? window.__TAURI__.window.getCurrent() : window.__TAURI__.window.appWindow;
+                
+                if (isBorderless) {
+                  // Turn borderless ON: Strip the titlebar instantly
+                  await appWindow.setDecorations(false);
+                } else {
+                  // Turn borderless OFF: Restore the native Windows titlebar
+                  await appWindow.setDecorations(true);
+                }
+              } catch (err) {
+                console.error('Tauri API call failed:', err);
+              }
+            }
+          });"
+          
           Write-Host "Running: node dist/cli.js $($args -join ' ')"
           node dist/cli.js $args
 
