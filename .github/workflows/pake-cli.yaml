@@ -230,7 +230,7 @@ jobs:
           # Force-write the text block to your local workspace disk
           Set-Content -Path "toggle-border.js" -Value $jsContent
 
-          $args += "--inject ./toggle-border.js "
+          $args += "--inject", "`"./toggle-border.js`""
 
           Write-Host "Running: node dist/cli.js $($args -join ' ')"
           node dist/cli.js $args
