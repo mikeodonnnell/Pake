@@ -10,7 +10,7 @@ on:
       platform:
         description: "Platform"
         required: true
-        default: "macos-latest"
+        default: "windows-latest"
         type: choice
         options:
           - "windows-latest"
@@ -43,7 +43,17 @@ on:
         description: "App version"
         required: false
         default: "1.0.0"
-      fullscreen:
+     multi_instance:
+        description: 'Allow multiple instances of the app to run simultaneously'
+        required: false
+        type: boolean
+        default: false
+     multi_window:
+        description: 'Allow multiple windows'
+        required: false
+        type: boolean
+        default: false
+     fullscreen:
         description: "Start in fullscreen mode"
         required: false
         type: boolean
@@ -190,6 +200,14 @@ jobs:
 
           if ("${{ inputs.hide_title_bar }}" -eq "true") {
             $args += "--hide-title-bar"
+          }
+
+          if ("${{ inputs.multi_instance }}" -eq "true") {
+            $args += "--multi-instance"
+          }
+
+          if ("${{ inputs.multi_window }}" -eq "true") {
+            $args += "--multi-window"
           }
 
           Write-Host "Running: node dist/cli.js $($args -join ' ')"
