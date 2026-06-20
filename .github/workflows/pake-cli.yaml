@@ -212,20 +212,31 @@ jobs:
 
           # Create the javascript file with BOTH border toggle and zoom controllers
           $jsContent = @"
+          let isBorderless = false;
           let zoomLevel = 1.0;
           
-          document.addEventListener('keydown', async (e) => {
-            // === 1. BORDERLESS TOGGLE (F11 Override) ===
-            if (e.key === 'F11') {
+          document.addEventListener('keydown', (e) => {
+            // === 1. BORDERLESS TOGGLE USING CTRL + SHIFT + B ===
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'b') {
               e.preventDefault();
+              isBorderless = !isBorderless;
               
-              // Use the browser's native engine to drop the window borders/titlebar
-              if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch((err) => {
-                  console.error('Fullscreen request failed:', err);
-                });
+              if (isBorderless) {
+                // Force layout canvas to overflow outer windows boundaries completely
+                document.documentElement.style.position = 'fixed';
+                document.documentElement.style.top = '0';
+                document.documentElement.style.left = '0';
+                document.documentElement.style.width = '100vw';
+                document.documentElement.style.height = '100vh';
+                document.documentElement.style.zIndex = '999999';
               } else {
-                document.exitFullscreen();
+                // Restore standard default application layouts
+                document.documentElement.style.position = '';
+                document.documentElement.style.top = '';
+                document.documentElement.style.left = '';
+                document.documentElement.style.width = '';
+                document.documentElement.style.height = '';
+                document.documentElement.style.zIndex = '';
               }
             }
           
@@ -259,7 +270,6 @@ jobs:
             }
           });
           "@
-
           
           # Write the text block cleanly to your workspace
           Set-Content -Path "toggle-border.js" -Value $jsContent
