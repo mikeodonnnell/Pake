@@ -212,17 +212,23 @@ jobs:
 
           # Create the javascript file with BOTH border toggle and zoom controllers
           $jsContent = @"
-          let isBorderless = false;
           let zoomLevel = 1.0;
           
           document.addEventListener('keydown', async (e) => {
-            // === 1. BORDERLESS TOGGLE (Ctrl + B) ===
-            if (e.key.toUpperCase() === 'F11') {
+            // === 1. BORDERLESS TOGGLE (F11 Override) ===
+            if (e.key === 'F11') {
               e.preventDefault();
-              isBorderless = !isBorderless;
               try {
-                const appWindow = window.__TAURI__.window.getCurrent ? window.__TAURI__.window.getCurrent() : window.__TAURI__.window.appWindow;
-                await appWindow.setDecorations(!isBorderless);
+                // Pinpoint the window object explicitly bypassing version mismatching
+                const appWindow = window.__TAURI__.window.getCurrentWindow 
+                  ? window.__TAURI__.window.getCurrentWindow() 
+                  : (window.__TAURI__.window.getCurrent ? window.__TAURI__.window.getCurrent() : window.__TAURI__.window.appWindow);
+
+                // Check Tauri's real decoration state dynamically
+                const hasDecorations = await appWindow.isDecorated();
+                
+                // Toggle the borders cleanly: if it has them, remove them. If not, restore them.
+                await appWindow.setDecorations(!hasDecorations);
               } catch (err) {
                 console.error('Tauri interaction failed:', err);
               }
