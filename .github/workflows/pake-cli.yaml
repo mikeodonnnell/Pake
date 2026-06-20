@@ -166,7 +166,7 @@ jobs:
       - name: Build App (Windows)
         if: runner.os == 'Windows'
         timeout-minutes: 25
-        shell: pwsh
+        shell: bash
         run: |
           $args = "${{ inputs.url }}", "--name", "${{ inputs.name }}"
 
