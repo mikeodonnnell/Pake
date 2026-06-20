@@ -44,12 +44,12 @@ on:
         required: false
         default: "1.0.0"
      multi_instance:
-        description: 'Allow multiple instances of the app to run simultaneously'
+        description: "Allow multiple instances of the app to run simultaneously"
         required: false
         type: boolean
         default: false
      multi_window:
-        description: 'Allow multiple windows'
+        description: "Allow multiple windows"
         required: false
         type: boolean
         default: false
