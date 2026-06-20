@@ -210,32 +210,28 @@ jobs:
             $args += "--multi-window"
           }
 
-          $args += "--inject-javascript "
-          $args += "let isBorderless = false;
-          
+          # Create a physical JavaScript file on the runner hard drive
+          cat << 'EOF' > toggle-border.js
+          let isBorderless = false;
           document.addEventListener('keydown', async (e) => {
-            // Catch the Ctrl + B hotkey combination
-            if (e.key === 'F11') {
+            if (e.ctrlKey && e.key.toLowerCase() === 'b') {
               e.preventDefault();
               isBorderless = !isBorderless;
-              
               try {
-                // Access Tauri's core window frame manager dynamically
+                // Access Tauri's native window frame manager safely
                 const appWindow = window.__TAURI__.window.getCurrent ? window.__TAURI__.window.getCurrent() : window.__TAURI__.window.appWindow;
                 
-                if (isBorderless) {
-                  // Turn borderless ON: Strip the titlebar instantly
-                  await appWindow.setDecorations(false);
-                } else {
-                  // Turn borderless OFF: Restore the native Windows titlebar
-                  await appWindow.setDecorations(true);
-                }
+                // setDecorations(true) shows borders, setDecorations(false) hides them
+                await appWindow.setDecorations(!isBorderless);
               } catch (err) {
-                console.error('Tauri API call failed:', err);
+                console.error('Tauri interaction failed:', err);
               }
             }
-          });"
-          
+          });
+          EOF
+
+          $args += "--inject ./toggle-border.js "
+
           Write-Host "Running: node dist/cli.js $($args -join ' ')"
           node dist/cli.js $args
 
